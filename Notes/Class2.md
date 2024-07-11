@@ -96,3 +96,7 @@ def tell() -> int
 
 ### Arquivos Binários em Python
 
+[int].to_bytes(n) -> Converte inteiro para n bytes  
+int.from_bytes([bytes]) -> Converte bytes para inteiro  
+[str].encode() -> converte string para bytes  
+[bytes].decode() -> converte bytes para strings
