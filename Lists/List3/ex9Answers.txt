@@ -1,0 +1,4 @@
+Fontes|Susana|Rua Maestro Cardim 4569|Diadema|SP|04325001|
+Lins|Alice|Rua Joao Paulo 9632|São Paulo|SP|01199999|
+Souza|Miguel|Rua x 123|Maringá|PR|87100200|
+Cardoso|Samuel|Rua Francisco Morato 1599|Guarulhos|SP|02177060|
