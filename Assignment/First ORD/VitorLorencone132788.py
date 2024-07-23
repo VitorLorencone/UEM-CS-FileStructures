@@ -54,11 +54,14 @@ def main(operations:str) -> None:
 
         dataFile.seek(led)
         ledSize:int = int.from_bytes(dataFile.read(REGSIZE), signed=True)
+        print("led: ", led)
+        print("size: ", ledSize)
         
         while led != -1:
             lst.append([led, ledSize])
             dataFile.seek(led+REGSIZE+1)
             led = int.from_bytes(dataFile.read(LEDOFFSETSIZE), signed=True)
+            print(led)
             if led != -1:
                 dataFile.seek(led)
                 ledSize:int = int.from_bytes(dataFile.read(REGSIZE), signed=True)
