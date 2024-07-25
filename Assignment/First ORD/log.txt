@@ -1,0 +1,2 @@
+LED -> [offset: 4, tam: 80] -> [offset: 2451, tam: 80] -> [offset: 5516, tam: 79] -> [offset: 841, tam: 42] -> [offset: 1592, tam: 37] -> [offset: 5216, tam: 31] -> [offset: 1861, tam: 29] -> [offset: 255, tam: 13] -> [offset: -1]
+Total: 8 espaços disponíveis
