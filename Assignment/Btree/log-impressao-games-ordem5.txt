@@ -29,14 +29,14 @@ Offsets = [326, 186, -1, -1]
 Filhos = [-1, -1, -1, -1, -1]
 
 Pagina 6:
-Chaves = [178, 187, 188, -1]
+Chaves = [178, 187, -1, -1]
 Offsets = [796, 110, -1, -1]
 Filhos = [-1, -1, -1, -1, -1]
 
 Pagina 7:
-Chaves = [115, 161, -1, -1]
-Offsets = [368, 955, -1, -1]
-Filhos = [1, 4, 6, -1, -1]
+Chaves = [115, 161, 188, -1]
+Offsets = [368, 955, 1000, -1]
+Filhos = [1, 4, 6, 9, -1]
 
 - - - - - - - - - - Raiz  - - - - - - - - - -
 Pagina 8:
@@ -44,5 +44,10 @@ Chaves = [80, -1, -1, -1]
 Offsets = [4, -1, -1, -1]
 Filhos = [2, 7, -1, -1, -1]
 - - - - - - - - - - - - - - - - - - - - - - -
+
+Pagina 9:
+Chaves = [189, 190, -1, -1]
+Offsets = [2000, 3000, -1, -1]
+Filhos = [-1, -1, -1, -1, -1]
 
 O índice "btree.dat" foi impresso com sucesso!
