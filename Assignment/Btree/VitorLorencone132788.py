@@ -2,22 +2,27 @@
 import sys
 
 # Constantes
+# Ordem da Árvore B
 TREE_ORDER:int = 5
 
+# Informações sobre tamanho em bytes dos dados da árvore
 ROOT_SIZE_BYTES:int = 4
 ELEMENT_SIZE_BYTES:int = 4
 PAGE_SIZE_BYTES = ELEMENT_SIZE_BYTES * (1 + 2*(TREE_ORDER-1) + TREE_ORDER)
 
+# Constante que representa o byte nulo
 # \xFF\xFF\xFF\xFF
 NULL_VALUE_HEX:bytes = int.to_bytes(256**ELEMENT_SIZE_BYTES - 1, ELEMENT_SIZE_BYTES, byteorder="little")
 
+# Constantes que representam as informações do arquivo de dados
 HEADER_SIZE_BYTES:int = 4
 RECORD_SIZE_BYTES:int = 2
 
+# Caminho para cada arquivo
 DATA_FILE_PATH:str = 'games.dat'
 TREE_FILE_PATH:str = 'btree.dat'
 LOG_PRINT_FILE_PATH:str = 'log-impressao-' + DATA_FILE_PATH.split('.')[0] + '-ordem' + str(TREE_ORDER) + '.txt'
-LOG_OP_FILE_PATH:str = 'log-op-teste-' + DATA_FILE_PATH.split('.')[0] + '-ordem' + str(TREE_ORDER) + '.txt'
+LOG_OP_FILE_PATH:str = 'log-operations-' + DATA_FILE_PATH.split('.')[0] + '-ordem' + str(TREE_ORDER) + '.txt'
 
 class Pages:
     def __init__(self):
@@ -162,9 +167,8 @@ def insertInTree(tree, key, rrn):
             writePage(tree, promChildR, newPag)
             return promKey, promChildR, True
 
-def insertionManager(root:int):
-    key:int = 1 # Leitura de uma chave
-    while key != -1:
+def insertionManager(tree, root:int, insertionKeys:list[int]):
+    for key in insertionKeys:
         promKey, promChildR, prom = insertInTree(tree, key, root)
 
         if prom == True:
@@ -177,8 +181,6 @@ def insertionManager(root:int):
             newRRN:int = nextRRN(tree)
             writePage(tree, newRRN, newPage)
             root = newRRN
-        
-        # Leitura da Prox chave
     
     return root
 
@@ -198,6 +200,21 @@ def CreateTree() -> None:
     if root == 0:
         writeTreeRoot(treeFile, root)
         writePage(treeFile, 0, Pages())
+
+    dataFile.seek(0)
+    header:int = int.from_bytes(dataFile.read(HEADER_SIZE_BYTES), signed=True, byteorder="little")
+
+    insertKeyList:list[int] = []
+
+    while not EOF(dataFile):
+        recSize:int = int.from_bytes(dataFile.read(RECORD_SIZE_BYTES), signed=True, byteorder="little")
+        rawField:bytes = dataFile.read(recSize)
+        fields:list[str] = rawField.decode().split("|")
+
+        insertKeyList.append(int(fields[0]))
+    
+    root = insertionManager(treeFile, root, insertKeyList)
+    writeTreeRoot(treeFile, root)
 
     dataFile.close()
     treeFile.close()
@@ -260,6 +277,19 @@ def PrintTree() -> None:
     
 # Seleção da função e flag utilizada
 if __name__ == '__main__':
+
+    dataFile = open(DATA_FILE_PATH, 'r+b')
+    treeFile = open(TREE_FILE_PATH, 'r+b')
+
+    root:int = readTreeRoot(treeFile)
+    if root == 0:
+        writeTreeRoot(treeFile, root)
+        writePage(treeFile, 0, Pages())
+
+    insertKeyList:list[int] = [188]
+
+    root = insertionManager(treeFile, root, insertKeyList)
+    writeTreeRoot(treeFile, root)
 
     # Escrita sem as flags
     if len(sys.argv) <= 1:
