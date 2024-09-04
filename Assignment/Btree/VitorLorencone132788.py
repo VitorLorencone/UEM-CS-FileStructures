@@ -15,7 +15,7 @@ HEADER_SIZE_BYTES:int = 4
 RECORD_SIZE_BYTES:int = 2
 
 DATA_FILE_PATH:str = 'games.dat'
-TREE_FILE_PATH:str = 'btreee.dat'
+TREE_FILE_PATH:str = 'btree.dat'
 LOG_PRINT_FILE_PATH:str = 'log-impressao-' + DATA_FILE_PATH.split('.')[0] + '-ordem' + str(TREE_ORDER) + '.txt'
 LOG_OP_FILE_PATH:str = 'log-op-teste-' + DATA_FILE_PATH.split('.')[0] + '-ordem' + str(TREE_ORDER) + '.txt'
 
@@ -28,6 +28,13 @@ class Pages:
     
     def isFull(self):
         return self.numKeys >= TREE_ORDER - 1
+
+def EOF(file)->bool:
+    currentOffset:int = file.tell()
+    file.seek(0, 2)
+    eofOffset:int = file.tell()
+    file.seek(currentOffset)
+    return currentOffset == eofOffset
 
 def readTreeRoot(tree)->int:
     tree.seek(0)
@@ -207,7 +214,7 @@ def ExecuteTree(arg:str) -> None:
         operationFile = open(arg, 'r', encoding="utf8")
 
         # Acessa o arquivo de Log de Operações
-        operationFile = open(LOG_OP_FILE_PATH, 'w+b', encoding="utf8")
+        logFile = open(LOG_OP_FILE_PATH, 'w', encoding="utf8")
 
     except OSError as e:
         print(e)
@@ -218,21 +225,38 @@ def ExecuteTree(arg:str) -> None:
 
 def PrintTree() -> None:
     try:
-        # Acessa o arquivo de Dados
-        dataFile = open(DATA_FILE_PATH, 'r+b')
-
         # Acessa o arquivo de Árvore
         treeFile = open(TREE_FILE_PATH, 'r+b')
 
         # Acessa o arquivo de Log de Impressão
-        logFile = open(LOG_PRINT_FILE_PATH, 'w+b')
+        logFile = open(LOG_PRINT_FILE_PATH, 'w', encoding="utf8")
 
     except OSError as e:
         print(e)
         exit()
 
-    dataFile.close()
+    treeFile.seek(0)
+    logFile.seek(0)
+    root:int = readTreeRoot(treeFile)
+
+    rrn:int = 0
+    while not EOF(treeFile):
+        pag:Pages = readPage(treeFile, rrn)
+        text:str = f"Pagina {rrn}:\nChaves = {str(pag.keys)}\nOffsets = {str(pag.offsets)}\nFilhos = {str(pag.children)}\n"
+
+        if rrn == root:
+            logFile.write("- - - - - - - - - - Raiz  - - - - - - - - - -\n")        
+            logFile.write(text)
+            logFile.write("- - - - - - - - - - - - - - - - - - - - - - -\n\n")
+        else:
+            logFile.write(text + "\n")
+
+        rrn += 1
+    
+    logFile.write(f"O índice \"{TREE_FILE_PATH}\" foi impresso com sucesso!")
+
     treeFile.close()
+    logFile.close()
     
 # Seleção da função e flag utilizada
 if __name__ == '__main__':
