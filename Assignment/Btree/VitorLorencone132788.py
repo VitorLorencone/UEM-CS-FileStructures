@@ -1,9 +1,28 @@
+""" 
+Aluno: Vitor Madeira Lorençone
+RA: 132788
+Profa: Valeria Delisandra Feltrim
+
+Trabalho de gerenciamento de registros de um arquivo através de uma Árvore-B, usando um arquivo de operações
+
+Execute por 'python VitorLorencone132788.py -p' ou 'python VitorLorencone132788.py -e op.txt' ou 'python VitorLorencone132788.py -c', por exemplo.
+
+Informações importantes:
+1. Tudo foi escrito utilizando a ordenação Little endian
+2. O valor nulo definido foi o -1
+
+Coisas que eu quero conversar na apresentação do trabalho:
+1. Como foi a sua organização de código?? Eu gostei do meu trabalho, mas acho que organizei de uma forma muito bagunçada!!
+
+Perfeito o trabalho, profa!! Foi bem desafiador e recompensador!! 
+"""
+
 # Importação para a leitura das flags
 import sys
 
 # Constantes
-# Ordem da Árvore B
-TREE_ORDER:int = 5
+# Ordem da Árvore-B
+TREE_ORDER:int = 8
 
 # Informações sobre tamanho em bytes dos dados da árvore
 ROOT_SIZE_BYTES:int = 4
@@ -15,11 +34,16 @@ HEADER_SIZE_BYTES:int = 4
 RECORD_SIZE_BYTES:int = 2
 
 # Caminho para cada arquivo
-DATA_FILE_PATH:str = 'games20.dat'
+DATA_FILE_PATH:str = 'games.dat'
 TREE_FILE_PATH:str = 'btree.dat'
 LOG_PRINT_FILE_PATH:str = 'log-impressao-' + DATA_FILE_PATH.split('.')[0] + '-ordem' + str(TREE_ORDER) + '.txt'
 
+# Classe de Páginas
+
 class Pages:
+    """
+    Classe que representa as páginas da árvore
+    """
     def __init__(self):
         self.numKeys:int = 0
         self.keys:list[int] = [-1]*(TREE_ORDER - 1)
@@ -27,9 +51,17 @@ class Pages:
         self.children:[list[int]] = [-1]*TREE_ORDER
     
     def isFull(self):
+        """
+        Função que retorna True quando a página está cheia!
+        """
         return self.numKeys >= TREE_ORDER - 1
 
+# Funções Auxiliares
+
 def EOF(file)->bool:
+    """
+    Retorna True se está no fim do arquivo
+    """
     currentOffset:int = file.tell()
     file.seek(0, 2)
     eofOffset:int = file.tell()
@@ -37,15 +69,25 @@ def EOF(file)->bool:
     return currentOffset == eofOffset
 
 def readTreeRoot(tree)->int:
+    """
+    lê a raiz da árvore-B do arquivo btree.dat
+    """
     tree.seek(0)
     ans:int = int.from_bytes(tree.read(ROOT_SIZE_BYTES), signed=True, byteorder="little")
     return ans
 
 def writeTreeRoot(tree, root:int)->None:
+    """
+    Escreve o valor *root* no arquivo btree.dat
+    """
     tree.seek(0)
     tree.write(int.to_bytes(root, ROOT_SIZE_BYTES, signed=True, byteorder="little"))
 
 def readPage(tree, rrn:int)->Pages:
+    """
+    lê a página que está no rrn especificado da árvore
+    """
+
     resp:Pages = Pages()
     byte_offset:int = rrn*PAGE_SIZE_BYTES + ROOT_SIZE_BYTES
     tree.seek(byte_offset)
@@ -61,6 +103,10 @@ def readPage(tree, rrn:int)->Pages:
     return resp
 
 def writePage(tree, rrn:int, pag:Pages)->None:
+    """
+    Escreve a página no rrn especificado
+    """
+
     byte_offset:int = rrn*PAGE_SIZE_BYTES + ROOT_SIZE_BYTES
     tree.seek(byte_offset)
 
@@ -73,6 +119,10 @@ def writePage(tree, rrn:int, pag:Pages)->None:
         tree.write(int.to_bytes(pag.children[i], ELEMENT_SIZE_BYTES, signed=True, byteorder="little"))
 
 def searchPage(key:int, pag:Pages):
+    """
+    Procura por uma chave dentro de uma página
+    """
+
     pos:int = 0
     while pos < pag.numKeys and key > pag.keys[pos]:
         pos += 1
@@ -82,6 +132,10 @@ def searchPage(key:int, pag:Pages):
         return False, pos
 
 def searchTree(tree, key:int, rrn:int):
+    """
+    Procura por uma chave dentro de uma árvore
+    """
+
     if rrn == -1:
         return False, -1, -1
     else:
@@ -94,6 +148,10 @@ def searchTree(tree, key:int, rrn:int):
             return searchTree(tree, key, pag.children[pos])
 
 def insertInPage(tree, key:int, offset:int, childR:int, pag:Pages):
+    """
+    Insere uma chave na página
+    """
+
     if pag.isFull():
         pag.keys.append(-1)
         pag.offsets.append(-1)
@@ -112,11 +170,19 @@ def insertInPage(tree, key:int, offset:int, childR:int, pag:Pages):
     pag.numKeys += 1
 
 def nextRRN(tree)->int:
+    """
+    Busca o próximo rrn para criação de uma página no arquivo da árvore-B
+    """
+
     tree.seek(0, 2) # Fim do arquivo
     offset:int = tree.tell()
     return (offset - ROOT_SIZE_BYTES) // PAGE_SIZE_BYTES
 
 def divide(tree, key:int, offset:int, childR:int, pag:Pages):
+    """
+    Divide uma página e promove um chave, sendo uma das principais funções de inserção na árvore-B!
+    """
+
     insertInPage(tree, key, offset, childR, pag)
 
     middle:int = TREE_ORDER//2
@@ -145,6 +211,10 @@ def divide(tree, key:int, offset:int, childR:int, pag:Pages):
     return promKey, promOffset, promChildR, currentPage, newPage
 
 def insertInTree(tree, key, offset, rrn):
+    """
+    Insere uma chave na árvore
+    """
+
     if rrn == -1:
         promKey:int = key
         promOffset:int = offset
@@ -174,6 +244,10 @@ def insertInTree(tree, key, offset, rrn):
             return promKey, promOffset, promChildR, True
 
 def insertionManager(tree, root:int, insertionKeys:list[tuple]):
+    """
+    Gerencia as inserções em uma árvore-B
+    """
+
     for key, offset in insertionKeys:
         promKey, promOffset, promChildR, prom = insertInTree(tree, key, offset, root)
 
@@ -192,12 +266,20 @@ def insertionManager(tree, root:int, insertionKeys:list[tuple]):
     return root
 
 def retrieveInfoDataFile(file, offset:int)->str:
+    """
+    Faz uma busca direta no arquivo de dados para recuperar algum registro
+    """
+
     file.seek(offset)
     recSize:int = int.from_bytes(file.read(RECORD_SIZE_BYTES), signed=True, byteorder="little")
     info:str = file.read(recSize).decode()
     return info
 
 def InsertInfoDataFile(file, info:str):
+    """
+    Faz uma inserção no arquivo da dados
+    """
+
     file.seek(0,2)
     offset:int = file.tell()
     size:int = len(info)
@@ -211,7 +293,13 @@ def InsertInfoDataFile(file, info:str):
 
     return offset, size
 
+# Funções de Operações
+
 def CreateTree() -> None:
+    """
+    Função principal para a criação da árvore-B
+    """
+
     try:
         # Acessa o arquivo de Dados
         dataFile = open(DATA_FILE_PATH, 'r+b')
@@ -251,6 +339,10 @@ def CreateTree() -> None:
     treeFile.close()
 
 def ExecuteTree(arg:str) -> None:
+    """
+    Função principal para a execução do arquivo de operações
+    """
+
     try:
         # Acessa o arquivo de Dados
         dataFile = open(DATA_FILE_PATH, 'r+b')
@@ -319,6 +411,10 @@ def ExecuteTree(arg:str) -> None:
     logFile.close()
 
 def PrintTree() -> None:
+    """
+    Função principal para a impressão da árvore-B
+    """
+
     try:
         # Acessa o arquivo de Árvore
         treeFile = open(TREE_FILE_PATH, 'r+b')
@@ -355,6 +451,9 @@ def PrintTree() -> None:
     
 # Seleção da função e flag utilizada
 if __name__ == '__main__':
+    """
+    Função principal para a execução do código
+    """
 
     # Escrita sem as flags
     if len(sys.argv) <= 1:
