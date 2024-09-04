@@ -10,16 +10,12 @@ ROOT_SIZE_BYTES:int = 4
 ELEMENT_SIZE_BYTES:int = 4
 PAGE_SIZE_BYTES = ELEMENT_SIZE_BYTES * (1 + 2*(TREE_ORDER-1) + TREE_ORDER)
 
-# Constante que representa o byte nulo
-# \xFF\xFF\xFF\xFF
-NULL_VALUE_HEX:bytes = int.to_bytes(256**ELEMENT_SIZE_BYTES - 1, ELEMENT_SIZE_BYTES, byteorder="little")
-
 # Constantes que representam as informações do arquivo de dados
 HEADER_SIZE_BYTES:int = 4
 RECORD_SIZE_BYTES:int = 2
 
 # Caminho para cada arquivo
-DATA_FILE_PATH:str = 'games.dat'
+DATA_FILE_PATH:str = 'games20.dat'
 TREE_FILE_PATH:str = 'btree.dat'
 LOG_PRINT_FILE_PATH:str = 'log-impressao-' + DATA_FILE_PATH.split('.')[0] + '-ordem' + str(TREE_ORDER) + '.txt'
 
@@ -130,15 +126,21 @@ def divide(tree, key:int, offset:int, childR:int, pag:Pages):
 
     currentPage:Pages = Pages()
     currentPage.numKeys = middle
-    currentPage.keys = pag.keys[:middle] + (TREE_ORDER - 1 - middle)*[-1]
-    currentPage.offsets = pag.offsets[:middle] + (TREE_ORDER - 1 - middle)*[-1]
-    currentPage.children = pag.children[:middle+1] + (TREE_ORDER - 1 - middle)*[-1]
+    currentPage.keys = pag.keys[:middle]
+    currentPage.keys += (TREE_ORDER - 1 - len(currentPage.keys))*[-1]
+    currentPage.offsets = pag.offsets[:middle]
+    currentPage.offsets += (TREE_ORDER - 1 - len(currentPage.offsets))*[-1]
+    currentPage.children = pag.children[:middle+1]
+    currentPage.children += (TREE_ORDER - len(currentPage.children))*[-1]
 
     newPage:Pages = Pages()
-    newPage.numKeys = TREE_ORDER-1-middle
-    newPage.keys = pag.keys[middle+1:] + (TREE_ORDER - 1 - middle)*[-1]
-    newPage.offsets = pag.offsets[middle+1:] + (TREE_ORDER - 1 - middle)*[-1]
-    newPage.children = pag.children[middle+1:] + (TREE_ORDER - middle)*[-1]
+    newPage.numKeys = TREE_ORDER-middle-1
+    newPage.keys = pag.keys[middle+1:]
+    newPage.keys += (TREE_ORDER - 1 - len(newPage.keys))*[-1]
+    newPage.offsets = pag.offsets[middle+1:]
+    newPage.offsets += (TREE_ORDER - 1 - len(newPage.offsets))*[-1]
+    newPage.children = pag.children[middle+1:]
+    newPage.children += (TREE_ORDER - len(newPage.children))*[-1]
 
     return promKey, promOffset, promChildR, currentPage, newPage
 
@@ -191,8 +193,8 @@ def insertionManager(tree, root:int, insertionKeys:list[tuple]):
 
 def retrieveInfoDataFile(file, offset:int)->str:
     file.seek(offset)
-    recSize:int = int.from_bytes(dataFile.read(RECORD_SIZE_BYTES), signed=True, byteorder="little")
-    info:str = dataFile.read(recSize).decode()
+    recSize:int = int.from_bytes(file.read(RECORD_SIZE_BYTES), signed=True, byteorder="little")
+    info:str = file.read(recSize).decode()
     return info
 
 def InsertInfoDataFile(file, info:str):
@@ -203,7 +205,7 @@ def InsertInfoDataFile(file, info:str):
     file.write(info.encode())
 
     file.seek(0)
-    header:int = int.from_bytes(dataFile.read(HEADER_SIZE_BYTES), signed=True, byteorder="little")
+    header:int = int.from_bytes(file.read(HEADER_SIZE_BYTES), signed=True, byteorder="little")
     file.seek(0)
     file.write(int.to_bytes(header+1, HEADER_SIZE_BYTES, signed=True, byteorder="little"))
 
@@ -280,10 +282,14 @@ def ExecuteTree(arg:str) -> None:
 
     # Execução de cada operação, em ordem
     for tasks in operationInfo:
+
+        root:int = readTreeRoot(treeFile)
+
         match(tasks[0]):
             case 'b':
-                found, rrn = searchTree(treeFile, tasks[1], root)
-                logFile.write(f"Busca pelo registro de chave \"{task[1]}\"\n")
+                key:int = int(tasks[1])
+                found, rrn, pos = searchTree(treeFile, key, root)
+                logFile.write(f"Busca pelo registro de chave \"{key}\"\n")
 
                 if found:
                     pag:Pages = readPage(treeFile, rrn)
@@ -295,19 +301,17 @@ def ExecuteTree(arg:str) -> None:
                     logFile.write(f"Erro: registro nao encontrado!\n\n")
 
             case 'i':
-                key = tasks[1].split("|")[0]
-                found = searchTree(treeFile, key, root)
+                key = int(tasks[1].split("|")[0])
+                found, rrn, pos = searchTree(treeFile, key, root)
                 logFile.write(f"Insercao do registro de chave \"{key}\"\n")
 
                 if found:
                     logFile.write(f"Erro: chave \"{key}\" já existente!\n\n")
                 else:
                     offset, size = InsertInfoDataFile(dataFile, tasks[1])
-                    root = insertionManager(treeFile, root, (key, offset))
+                    root = insertionManager(treeFile, root, [(key, offset)])
                     writeTreeRoot(treeFile, root)
                     logFile.write(f"{tasks[1]} ({size} bytes - offset {offset})\n\n")
-
-
 
     dataFile.close()
     treeFile.close()
