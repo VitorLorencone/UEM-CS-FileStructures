@@ -1,0 +1,60 @@
+Busca pelo registro de chave "103"
+Erro: registro nao encontrado!
+
+Busca pelo registro de chave "27"
+27|NBA Jam|1993|Sports|Midway|Arcade| (37 bytes - offset 737)
+
+Busca pelo registro de chave "6"
+6|Myst|1993|Adventure|Broderbund|Macintosh| (43 bytes - offset 5978)
+
+Busca pelo registro de chave "38"
+38|Lemmings|1991|Puzzle|Psygnosis|Amiga| (40 bytes - offset 2400)
+
+Insercao do registro de chave "173"
+173|Batman: Arkham City|2011|Action-adventure|Warneb Bros. Interactive Entertainment|"PlayStation 3, Xbox 360"| (111 bytes - offset 6460)
+
+Insercao do registro de chave "148"
+148|Ms. Pac-Man|1982|Maze|Midway|Arcade| (40 bytes - offset 6573)
+
+Insercao do registro de chave "181"
+181|Pac-Man|1980|Maze|Namco|Arcade| (35 bytes - offset 6615)
+
+Busca pelo registro de chave "41"
+41|Out Run|1986|Racing|Sega|Arcade| (35 bytes - offset 3730)
+
+Busca pelo registro de chave "148"
+148|Ms. Pac-Man|1982|Maze|Midway|Arcade| (40 bytes - offset 6573)
+
+Busca pelo registro de chave "80"
+80|Grand Theft Auto V|2013|Action-adventure|Rockstar Games|"PlayStation 3, Xbox 360"| (85 bytes - offset 4142)
+
+Busca pelo registro de chave "58"
+58|Star Wars: Knights of the Old Republic|2003|Role-playing|LucasArts|Xbox| (75 bytes - offset 2323)
+
+Busca pelo registro de chave "170"
+Erro: registro nao encontrado!
+
+Insercao do registro de chave "135"
+135|The Witcher III: Wild Hunt|2015|Action role-playing|CD Projekt|"PC, PlayStation 4, Xbox One"| (97 bytes - offset 6652)
+
+Busca pelo registro de chave "181"
+181|Pac-Man|1980|Maze|Namco|Arcade| (35 bytes - offset 6615)
+
+Busca pelo registro de chave "198"
+Erro: registro nao encontrado!
+
+Busca pelo registro de chave "115"
+Erro: registro nao encontrado!
+
+Busca pelo registro de chave "44"
+44|Zork|1977|Adventure|Infocom|PDP-10| (38 bytes - offset 50)
+
+Insercao do registro de chave "202"
+202|Tom Clancy's Splinter Cell|2002|Stealth|Ubisoft|Xbox| (57 bytes - offset 6751)
+
+Busca pelo registro de chave "15"
+15|Final Fantasy VII|1997|Role-playing|Square|PlayStation| (58 bytes - offset 6268)
+
+Insercao do registro de chave "181"
+Erro: chave "181" já existente!
+
